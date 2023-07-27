@@ -1,11 +1,8 @@
-<!-- eslint-disable @typescript-eslint/ban-ts-comment -->
 <script setup lang="ts">
 import * as echarts from 'echarts'
 import { onMounted } from 'vue'
+import { links, nodes } from '../assets/charts.json'
 import { categories } from '../types'
-
-const res = await fetch('charts.json')
-const { nodes, links } = await res.json()
 
 onMounted(() => {
   const myChart = echarts.init(document.getElementById('main'))
@@ -24,20 +21,11 @@ onMounted(() => {
         symbolSize: 15,
         draggable: false,
         force: {
-          repulsion: 300,
+          repulsion: 150,
         },
         roam: true,
-        emphasis: {
-          // @ts-expect-error
-          focus: 'adjacency',
-          lineStyle: {
-            width: 5,
-          },
-        },
       },
     ],
-    animationDuration: 1500,
-    animationEasingUpdate: 'quinticInOut',
     legend: {
       data: categories.map(a => a.name),
     },
@@ -60,4 +48,3 @@ onMounted(() => {
   min-height: 100vh;
 }
 </style>
-../../../cli/lib/useModules
