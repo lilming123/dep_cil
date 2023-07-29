@@ -29,5 +29,3 @@ export const categories: ICategories[] = [
     name: 'yourself',
   },
 ]
-
-
