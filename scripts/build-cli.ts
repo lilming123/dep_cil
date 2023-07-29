@@ -26,6 +26,7 @@ async function buildCli(format: string) {
       terser(),
       json(),
     ],
+    external: ['eslint']
   }
   // FIXME: 打包的时候会把 eslint 也打包进去
   const outputOptions = {
