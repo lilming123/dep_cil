@@ -15,12 +15,12 @@ program.command('analyze')
   .action(async ({ dep, json }) => {
     const depth = +dep
     if (json) {
-      analyze(dep, json)
+      analyze(json)
     }
     else {
       if (depth < 7 && !Number.isNaN(depth)) {
-        analyze(depth)
-        genPkgs()
+        analyze()
+        // genPkgs()
       }
       else {
         logDepthError()

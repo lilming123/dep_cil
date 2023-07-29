@@ -3,10 +3,9 @@ import typescript from '@rollup/plugin-typescript'
 import commonjs from '@rollup/plugin-commonjs'
 import terser from '@rollup/plugin-terser'
 import json from '@rollup/plugin-json'
-import { rollup } from 'rollup'
+import {OutputOptions, rollup} from 'rollup'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 
-// eslint-disable-next-line n/prefer-global/process
 const argv = minimist(process.argv.slice(2))
 const formats = ['amd', 'cjs', 'es', 'iife', 'system', 'umd']
 
@@ -26,22 +25,23 @@ async function buildCli(format: string) {
       terser(),
       json(),
     ],
+    external: ['eslint']
   }
-  // FIXME: 打包的时候会把 eslint 也打包进去
-  const outputOptions = {
+
+  const outputOptions: OutputOptions  = {
     dir: 'dist',
-    format,
+    format: 'cjs',
     banner: '#! /usr/bin/env node\nconst navigator = {}',
   }
   const bundle = await rollup(inputOptions)
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
   await bundle.write(outputOptions)
 }
 
 async function scriptBuild() {
-  for (const key of Object.keys(argv))
-    buildCli(key)
+  for (const key of Object.keys(argv)){
+    buildCli(key);
+  }
+
 }
 
 scriptBuild()

@@ -1,60 +1,65 @@
 import fs from 'node:fs'
-import path from 'node:path'
-import { getPackageInfo } from 'local-pkg'
-import { LogNotExportPkg } from './src/const'
+import {getPackageInfoSync, PackageResolvingOptions} from 'local-pkg'
+// @ts-ignore
+import {LogNotExportPkg} from './src/const.ts'
+// @ts-ignore
+import {ModuleInfo, pkgData} from "./src/dependency.ts";
 
-enum Dep {
-  'DEVDEPENDENCY',
-  'DEPENDENCY',
-}
-interface IPkgs {
-  [key: string]: any
-}
-
-const pkgs: IPkgs = {}
-
-function init() {
-  try {
-    const json = fs.readFileSync('package.json')
-    const { devDependencies, dependencies } = JSON.parse(json.toString())
-    for (const [name, version] of Object.entries(devDependencies ?? {}) as any)
-      pkgs[name] = { version, type: Dep.DEVDEPENDENCY, packages: {} }
-    for (const [name, version] of Object.entries(dependencies ?? {}) as any)
-      pkgs[name] = { version, type: Dep.DEPENDENCY, packages: {} }
-  }
-  catch (err: any) {
-    LogNotExportPkg(err.message)
-  }
-}
-// FIXME: 循环引用问题
-async function loadPkgs(rootPkgs: IPkgs, maxDep: number = 5) {
-  if (maxDep === 0)
-    return
-  for (const key of Object.keys(rootPkgs)) {
+export default class Analyze {
+  constructor() {
     try {
-      if (!key.startsWith('.')) {
-        const pkgsInfo = await getPackageInfo(key)
-        for (const [name, version] of Object.entries(pkgsInfo?.packageJson?.devDependencies ?? {}) as any)
-          rootPkgs[key].packages[name] = { version, type: Dep.DEVDEPENDENCY, packages: {} }
-        for (const [name, version] of Object.entries(pkgsInfo?.packageJson?.dependencies ?? {}) as any)
-          rootPkgs[key].packages[name] = { version, type: Dep.DEPENDENCY, packages: {} }
-        if (JSON.stringify(rootPkgs[key].packages) !== '{}')
-          await loadPkgs(rootPkgs[key].packages, maxDep - 1)
+      const json = fs.readFileSync('package.json')
+      const { devDependencies, dependencies } = JSON.parse(json.toString())
+      for (const name of Object.keys(devDependencies ?? {}) as any){
+          pkgData.setDependency(this.getMouduleInfo(name,true));
+      }
+      for (const name of Object.keys(dependencies ?? {}) as any){
+          pkgData.setDependency(this.getMouduleInfo(name,false));
       }
     }
     catch (err: any) {
       LogNotExportPkg(err.message)
     }
   }
+
+  /**
+   * 获取依赖的信息
+   * @param name 依赖名
+   * @param path 依赖所在的位置
+   * @param isDev 是否是开发依赖
+   * @private
+   */
+  private getMouduleInfo(name:string, isDev: boolean, path: PackageResolvingOptions={}): ModuleInfo | null{
+    try {
+      const info = getPackageInfoSync(name,path);
+      if (!info){
+        return null;
+      }else {
+        return {
+          name: info.name,
+          version: info.version,
+          isDep: isDev,
+          url: info.rootPath,
+          description: info.packageJson.description
+        };
+      }
+    }
+    catch (err: any) {
+      LogNotExportPkg(err.message)
+      return null;
+    }
+  }
+  public analyze(p: string = './') {
+    pkgData.writeFile(p)
+    // loadPkgs(pkgPath).then(() => {
+    //   fs.writeFile(path.resolve(p, './pkgs.json'), JSON.stringify(pkgs), (err) => {
+    //     if (err)
+    //       throw new Error('出错了')
+    //   })
+    // })
+  }
 }
 
-init()
+export const analyze = new Analyze();
 
-export function analyze(depth: number, p: string = './') {
-  loadPkgs(pkgs, depth).then(() => {
-    fs.writeFile(path.resolve(p, './pkgs.json'), JSON.stringify(pkgs), (err) => {
-      if (err)
-        throw new Error('出错了')
-    })
-  })
-}
+
