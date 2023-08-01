@@ -3,7 +3,7 @@ import { getPackageInfo, PackageResolvingOptions } from 'local-pkg'
 // @ts-ignore
 import { LogNotExportPkg } from './src/const.ts'
 // @ts-ignore
-import { DependencyGraph, ModuleInfo, pkgData } from './src/dependency.ts'
+import { DependencyGraph, ModuleInfo, pkgData } from './utils/dependency.ts'
 
 export default class Analyze {
   private readonly dependencies: any
