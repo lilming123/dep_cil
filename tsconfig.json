@@ -21,15 +21,14 @@
     "types": ["node"],
     "rootDir": "."
   },
+  "ts-node": {
+    "esm": true,
+  },
   "include": [
     "packages/**/*.ts",
     "scripts/*.ts",
-    "scripts/*.ts",
-    "web/vite.config.ts",
-    "scripts/build-charts.ts",
-    "scripts/build-cli.ts",
     "bin/*.ts",
     "lib/*.ts",
-    "lib/src/*.ts"
+    "lib/**/*.ts",
   ]
 }
