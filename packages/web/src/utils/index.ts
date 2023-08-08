@@ -68,7 +68,7 @@ export class Chart {
     this.echart?.setOption({
       series: [
         {
-          name: '引力关系图',
+          name: '引力图',
           nodes: this.nodes,
           links: this.links,
         },
@@ -80,16 +80,19 @@ export class Chart {
     this.echart = chart
     const options = {
       legend: {
-        data: ['树状图1', '树状图2', '引力关系图'],
+        data: ['树图', '引力图'],
         selectedMode: 'single',
         zlevel: 3,
+        itemHeight: 20,
+        itemWidth: 20,
+        itemGap: 25,
       },
       animationThreshold: 2 ** 32,
       hoverLayerThreshold: 2 ** 32,
       tooltip: {},
       series: [
         {
-          name: '引力关系图',
+          name: '引力图',
           zlevel: 1,
           type: 'graph',
           layout: 'force',
@@ -108,22 +111,10 @@ export class Chart {
           roam: true,
         },
         {
-          name: '树状图1',
+          name: '树图',
           zlevel: 2,
           type: 'tree',
-          data: [this.tree[0]],
-          roam: true,
-          label: {
-            show: true,
-          },
-          initialTreeDepth: 1,
-          expandAndCollapse: true,
-        },
-        {
-          name: '树状图2',
-          zlevel: 2,
-          type: 'tree',
-          data: [this.tree[1]],
+          data: [this.tree],
           roam: true,
           label: {
             show: true,
@@ -159,6 +150,18 @@ export class Chart {
   }
 
   getVersions(name: string) {
-    return this.versions[name]
+    return this.versions[name] ?? this.relations[name].version
+  }
+
+  fuzzySearch(name: string) {
+    const relatedPkg = this.relations[name]
+    if (relatedPkg)
+      return relatedPkg
+    const findPkg = Object.keys(this.relations).find((key) => {
+      return key.toLocaleLowerCase().includes(name.toLocaleLowerCase())
+    })
+    if (!findPkg)
+      return
+    return this.relations[findPkg]
   }
 }
